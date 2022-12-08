@@ -1,4 +1,4 @@
-// INCOMPLETE
+// Part 1
 package main
 
 import (
@@ -12,9 +12,11 @@ func main() {
 	i, _ := os.ReadFile("input.txt")
 	input := strings.Split(string(i), "\n")[1:]
 
+	dirs := []*dir{}
 	root := &dir{name: "/"}
 	root.parent = root
 	c := root
+	dirs = append(dirs, root)
 
 	for _, s := range input {
 		a := strings.Fields(s)
@@ -30,19 +32,34 @@ func main() {
 		} else if a[0] == "dir" {
 			temp := &dir{name: a[1], parent: c}
 			c.subs = append(c.subs, temp)
+			dirs = append(dirs, temp)
 		} else {
 			c.files = append(c.files, a[0])
+			size, _ := strconv.Atoi(a[0])
+			c.size += size
 		}
 	}
+
+	res1 := 0
+	for _, s := range dirs {
+		if sizes(s) <= 100000 {
+			res1 += sizes(s)
+		}
+	}
+
+	fmt.Println("Part 1:", res1)
 }
 
-func dirSize(d *dir) int {
-	res := 0
-	for i := range d.files {
-		temp, _ := strconv.Atoi((string(d.files[i])))
-		res += temp
+func sizes(d *dir) int {
+	i := d.size
+	for _, s := range d.subs {
+		if len(s.subs) == 0 {
+			i += s.size
+		} else {
+			i += sizes(s)
+		}
 	}
-	return res
+	return i
 }
 
 func print(d *dir) {
@@ -57,6 +74,7 @@ func print(d *dir) {
 		fmt.Print(" ", d.files[i])
 	}
 	fmt.Println("")
+	fmt.Println("Size:", d.size)
 }
 
 func get(d []*dir, s string) int {
@@ -73,4 +91,5 @@ type dir struct {
 	name   string
 	subs   []*dir
 	files  []string
+	size   int
 }
