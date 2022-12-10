@@ -8,16 +8,19 @@ import (
 )
 
 func main() {
-
 	i, _ := os.ReadFile("input.txt")
 	input := strings.Split(string(i), "\n")
 
 	r, rcount, x := make([]int, 0), 0, 1
+	r2, line, rcount2, x2 := make([]string, 0), genLine(), 0, 1
 	for _, s := range input {
+		line = checkLine(line, x2)
 		ins := strings.Split(s, " ")
-		if len(ins) == 1 {
+		if ins[0] == "noop" {
 			r = append(r, x)
 			rcount++
+			rcount2++
+			r2 = drawPixel(line, ((rcount2 - 1) % 40), r2)
 		} else {
 			val, _ := strconv.Atoi(ins[1])
 			rcount++
@@ -25,18 +28,6 @@ func main() {
 			rcount++
 			r = append(r, x)
 			x += val
-		}
-	}
-
-	r2, line, rcount2, x2 := make([]string, 0), genLine(), 0, 1
-	for _, s := range input {
-		line = checkLine(line, x2)
-		ins := strings.Split(s, " ")
-		if ins[0] == "noop" {
-			rcount2++
-			r2 = drawPixel(line, ((rcount2 - 1) % 40), r2)
-		} else {
-			val, _ := strconv.Atoi(ins[1])
 			rcount2++
 			r2 = drawPixel(line, ((rcount2 - 1) % 40), r2)
 			rcount2++
@@ -51,8 +42,8 @@ func main() {
 		res1 += r[i-1] * i
 	}
 	fmt.Println("Part 1:", res1-1)
-	fmt.Println("Part 2:")
 
+	fmt.Println("Part 2:")
 	for j := 0; j < 240; j++ {
 		fmt.Print(r2[j])
 		if j == 40-1 || j == 80-1 || j == 120-1 || j == 160-1 || j == 200-1 || j == 240-1 {
