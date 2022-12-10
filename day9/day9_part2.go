@@ -11,7 +11,7 @@ func main() {
 	i, _ := os.ReadFile("input.txt")
 	input := strings.Split(string(i), "\n")
 
-	maxH, maxW := 10000, 10000
+	maxH, maxW := 1000, 1000
 
 	arr := make([][][]string, maxH)
 	for i := range arr {
@@ -30,7 +30,7 @@ func main() {
 	}
 
 	for _, s := range input {
-		points[0].i, points[0].j, points[1].i, points[1].j = moveL0(arr, strings.Split(s, " "), points[0].i, points[0].j, points[1].i, points[1].j, points)
+		points[0].i, points[0].j, points[1].i, points[1].j = moveL0(arr, strings.Split(s, " "), points[0].i, points[0].j, points)
 	}
 
 	res2 := 0
@@ -51,49 +51,41 @@ type Point struct {
 }
 
 func move(arr [][][]string, hi int, hj, ti int, tj int, l int, s string) (x int, y int) {
-	//up
 	if hi == ti+2 && hj == tj {
 		arr[ti+1][tj][l] = s
 		return ti + 1, tj
 	}
 
-	//down
 	if hi == ti-2 && hj == tj {
 		arr[ti-1][tj][l] = s
 		return ti - 1, tj
 	}
 
-	//left
 	if hi == ti && hj == tj+2 {
 		arr[ti][tj+1][l] = s
 		return ti, tj + 1
 	}
 
-	//right
 	if hi == ti && hj == tj-2 {
 		arr[ti][tj-1][l] = s
 		return ti, tj - 1
 	}
 
-	//left up to right down
 	if (hi == ti+2 && hj == tj+2) || (hi == ti+2 && hj == tj+1) || (hi == ti+1 && hj == tj+2) {
 		arr[ti+1][tj+1][l] = s
 		return ti + 1, tj + 1
 	}
 
-	//left down to right up
 	if (hi == ti-1 && hj == tj+2) || (hi == ti-2 && hj == tj+2) || (hi == ti-2 && hj == tj+1) {
 		arr[ti-1][tj+1][l] = s
 		return ti - 1, tj + 1
 	}
 
-	//right down left up
 	if (hi == ti-1 && hj == tj-2) || (hi == ti-2 && hj == tj-1) || (hi == ti-2 && hj == tj-2) {
 		arr[ti-1][tj-1][l] = s
 		return ti - 1, tj - 1
 	}
 
-	//right up left down
 	if (hi == ti+2 && hj == tj-1) || (hi == ti+2 && hj == tj-2) || (hi == ti+1 && hj == tj-2) {
 		arr[ti+1][tj-1][l] = s
 		return ti + 1, tj - 1
@@ -102,7 +94,16 @@ func move(arr [][][]string, hi int, hj, ti int, tj int, l int, s string) (x int,
 	return ti, tj
 }
 
-func moveL0(arr [][][]string, input []string, i int, j int, ti int, tj int, p []Point) (x int, y int, x1 int, y1 int) {
+func moveAll(arr [][][]string, p []Point) {
+	for pc := 1; pc < 9; pc++ {
+		s := strconv.Itoa(pc)
+		if !checkDist(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j) {
+			p[pc+1].i, p[pc+1].j = move(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j, pc+1, s)
+		}
+	}
+}
+
+func moveL0(arr [][][]string, input []string, i int, j int, p []Point) (x int, y int, x1 int, y1 int) {
 	dir := input[0]
 	num, _ := strconv.Atoi(input[1])
 
@@ -110,94 +111,45 @@ func moveL0(arr [][][]string, input []string, i int, j int, ti int, tj int, p []
 	case "R":
 		for x := j; x <= num+j; x++ {
 			arr[i][x][0] = "H"
-			if !checkDist(arr, i, x, ti, tj) {
-				ti, tj = move(arr, i, x, ti, tj, 1, "1")
+			if !checkDist(arr, i, x, p[1].i, p[1].j) {
+				p[1].i, p[1].j = move(arr, i, x, p[1].i, p[1].j, 1, "1")
 			}
-			if !checkDist(arr, ti, tj, p[2].i, p[2].j) {
-				p[2].i, p[2].j = move(arr, ti, tj, p[2].i, p[2].j, 2, "2")
-			}
-			for pc := 2; pc < 9; pc++ {
-				s := strconv.Itoa(pc)
-				if !checkDist(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j) {
-					p[pc+1].i, p[pc+1].j = move(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j, pc+1, s)
-				}
-			}
+			moveAll(arr, p)
 		}
-
-		for x := j; x < num+j; x++ {
-			arr[i][x][0] = "."
-		}
-
-		return i, j + num, ti, tj
+		return i, j + num, p[1].i, p[1].j
 
 	case "L":
 		for x := j; x >= j-num; x-- {
 			arr[i][x][0] = "H"
-			if !checkDist(arr, i, x, ti, tj) {
-				ti, tj = move(arr, i, x, ti, tj, 1, "1")
+			if !checkDist(arr, i, x, p[1].i, p[1].j) {
+				p[1].i, p[1].j = move(arr, i, x, p[1].i, p[1].j, 1, "1")
 			}
-			if !checkDist(arr, ti, tj, p[2].i, p[2].j) {
-				p[2].i, p[2].j = move(arr, ti, tj, p[2].i, p[2].j, 2, "2")
-			}
-			for pc := 2; pc < 9; pc++ {
-				s := strconv.Itoa(pc)
-				if !checkDist(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j) {
-					p[pc+1].i, p[pc+1].j = move(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j, pc+1, s)
-				}
-			}
+			moveAll(arr, p)
 		}
-
-		for x := j; x > j-num; x-- {
-			arr[i][x][0] = "."
-		}
-		return i, j - num, ti, tj
+		return i, j - num, p[1].i, p[1].j
 
 	case "U":
 		for x := i; x >= i-num; x-- {
 			arr[x][j][0] = "H"
-			if !checkDist(arr, x, j, ti, tj) {
-				ti, tj = move(arr, x, j, ti, tj, 1, "1")
+			if !checkDist(arr, x, j, p[1].i, p[1].j) {
+				p[1].i, p[1].j = move(arr, x, j, p[1].i, p[1].j, 1, "1")
 			}
-			if !checkDist(arr, ti, tj, p[2].i, p[2].j) {
-				p[2].i, p[2].j = move(arr, ti, tj, p[2].i, p[2].j, 2, "2")
-			}
-			for pc := 2; pc < 9; pc++ {
-				s := strconv.Itoa(pc)
-				if !checkDist(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j) {
-					p[pc+1].i, p[pc+1].j = move(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j, pc+1, s)
-				}
-			}
+			moveAll(arr, p)
 		}
-
-		for x := i; x > i-num; x-- {
-			arr[x][j][0] = "."
-		}
-		return i - num, j, ti, tj
+		return i - num, j, p[1].i, p[1].j
 
 	case "D":
 		for x := i; x <= num+i; x++ {
 			arr[x][j][0] = "H"
-			if !checkDist(arr, x, j, ti, tj) {
-				ti, tj = move(arr, x, j, ti, tj, 1, "1")
+			if !checkDist(arr, x, j, p[1].i, p[1].j) {
+				p[1].i, p[1].j = move(arr, x, j, p[1].i, p[1].j, 1, "1")
 			}
-			if !checkDist(arr, ti, tj, p[2].i, p[2].j) {
-				p[2].i, p[2].j = move(arr, ti, tj, p[2].i, p[2].j, 2, "2")
-			}
-			for pc := 2; pc < 9; pc++ {
-				s := strconv.Itoa(pc)
-				if !checkDist(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j) {
-					p[pc+1].i, p[pc+1].j = move(arr, p[pc].i, p[pc].j, p[pc+1].i, p[pc+1].j, pc+1, s)
-				}
-			}
+			moveAll(arr, p)
 		}
-
-		for x := i; x < num+i; x++ {
-			arr[x][j][0] = "."
-		}
-		return i + num, j, ti, tj
+		return i + num, j, p[1].i, p[1].j
 	}
 
-	return i, j, ti, tj
+	return i, j, p[1].i, p[1].j
 }
 
 func checkDist(arr [][][]string, i1 int, j1 int, i2 int, j2 int) bool {
@@ -205,15 +157,6 @@ func checkDist(arr [][][]string, i1 int, j1 int, i2 int, j2 int) bool {
 		return true
 	}
 	return false
-}
-
-func printArr(arr [][][]string, l int) {
-	for i := range arr {
-		for j := range arr[i] {
-			fmt.Print(arr[i][j][l], " ")
-		}
-		fmt.Println("")
-	}
 }
 
 func fillArr(arr [][][]string) [][][]string {
