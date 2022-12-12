@@ -11,8 +11,7 @@ func main() {
 	i, _ := os.ReadFile("input.txt")
 	input := strings.Split(string(i), "\n\n")
 
-	monkeymap, monkeymap2 := make(map[int]monkey), make(map[int]monkey)
-
+	monkeymap, monkeymap2 := make(map[int]*monkey), make(map[int]*monkey)
 	for i, s := range input {
 		lines := strings.Split(s, "\n")
 		temp, temp2 := createMonkey(lines), createMonkey(lines)
@@ -23,7 +22,7 @@ func main() {
 	solve(monkeymap2, true)
 }
 
-func solve(monkeymap map[int]monkey, p2 bool) {
+func solve(monkeymap map[int]*monkey, p2 bool) {
 	rounds := 20
 	if p2 {
 		rounds = 10000
@@ -43,17 +42,17 @@ func solve(monkeymap map[int]monkey, p2 bool) {
 				} else {
 					newLevel = newLevel / 3
 				}
-				var nextMonkey monkey
+				nextMonkey := &monkey{}
 				if newLevel%m.test == 0 {
 					nextMonkey = monkeymap[m.iftrue]
 				} else {
 					nextMonkey = monkeymap[m.iffalse]
 				}
-				nextMonkey = addItems(nextMonkey, newLevel)
+				addItems(nextMonkey, newLevel)
 				monkeymap[nextMonkey.id] = nextMonkey
 				m.items[i] = -1
 			}
-			m = rearrangeItems(m)
+			rearrangeItems(m)
 			monkeymap[i] = m
 		}
 	}
@@ -78,42 +77,18 @@ func solve(monkeymap map[int]monkey, p2 bool) {
 	}
 }
 
-func addItems(m monkey, i int) monkey {
-	temp := make([]int, 0)
-	temp = m.items
-	temp = append(temp, i)
-
-	m2 := monkey{}
-	m2.id = m.id
-	m2.items = temp
-	m2.operation = m.operation
-	m2.test = m.test
-	m2.iftrue = m.iftrue
-	m2.iffalse = m.iffalse
-	m2.inspected = m.inspected
-
-	return m2
-
+func addItems(m *monkey, i int) {
+	m.items = append(m.items, i)
 }
 
-func rearrangeItems(m monkey) monkey {
+func rearrangeItems(m *monkey) {
 	temp := make([]int, 0)
-
-	m2 := monkey{}
-	m2.id = m.id
-	m2.operation = m.operation
-	m2.test = m.test
-	m2.iftrue = m.iftrue
-	m2.iffalse = m.iffalse
-	m2.inspected = m.inspected
-
 	for _, s := range m.items {
 		if s != -1 {
 			temp = append(temp, s)
 		}
 	}
-	m2.items = temp
-	return m2
+	m.items = temp
 }
 
 func eval(o string, l int) int {
@@ -122,16 +97,14 @@ func eval(o string, l int) int {
 	if !(strings.Split(o, " ")[1] == "old") {
 		val, _ = strconv.Atoi(strings.Split(o, " ")[1])
 	}
-
 	if op == "*" {
 		return l * val
 	}
 	return l + val
 }
 
-func createMonkey(lines []string) monkey {
-	temp := monkey{}
-
+func createMonkey(lines []string) *monkey {
+	temp := &monkey{}
 	name := strings.Fields(lines[0])
 	lines[1] = strings.Replace(lines[1], ",", "", -1)
 	sitems := strings.Fields(lines[1])[2:]
@@ -144,31 +117,9 @@ func createMonkey(lines []string) monkey {
 	test, _ := strconv.Atoi(strings.Fields(lines[3])[3])
 	iftrue, _ := strconv.Atoi(strings.Fields(lines[4])[5])
 	iffalse, _ := strconv.Atoi(strings.Fields(lines[5])[5])
-
 	temp.id, _ = strconv.Atoi(name[1][:len(name[1])-1])
-	temp.items = items
-	temp.operation = operation
-	temp.test = test
-	temp.iftrue = iftrue
-	temp.iffalse = iffalse
-	temp.inspected = 0
-
+	temp.items, temp.operation, temp.test, temp.iftrue, temp.iffalse, temp.inspected = items, operation, test, iftrue, iffalse, 0
 	return temp
-}
-
-func printMonkey(m monkey) {
-	fmt.Println("Monkey", m.id, ":")
-	fmt.Print("  Starting Items: ")
-	for _, s := range m.items {
-		fmt.Print(s, " ")
-	}
-	fmt.Println("")
-	fmt.Println("  Operation: new = old", m.operation)
-	fmt.Println("  Test: divisible by", m.test)
-	fmt.Println("    If true: throw to monkey", m.iftrue)
-	fmt.Println("    If false: throw to monkey", m.iffalse)
-	fmt.Println("      Inspected:", m.inspected)
-	fmt.Println("")
 }
 
 type monkey struct {
