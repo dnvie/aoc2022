@@ -11,17 +11,16 @@ func main() {
 	i, _ := os.ReadFile("input.txt")
 	input := strings.Split(string(i), "\n\n")
 
-	monkeymap := make(map[int]monkey)
+	monkeymap, monkeymap2 := make(map[int]monkey), make(map[int]monkey)
 
 	for i, s := range input {
 		lines := strings.Split(s, "\n")
-		temp := createMonkey(lines)
-		monkeymap[i] = temp
+		temp, temp2 := createMonkey(lines), createMonkey(lines)
+		monkeymap[i], monkeymap2[i] = temp, temp2
 	}
 
-	//Part 1 = false, Part 2 true
-	solve(monkeymap, true)
-
+	solve(monkeymap, false)
+	solve(monkeymap2, true)
 }
 
 func solve(monkeymap map[int]monkey, p2 bool) {
