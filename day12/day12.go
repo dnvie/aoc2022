@@ -31,7 +31,7 @@ func main() {
 				grid[i][j] = end
 			} else {
 				if getNum(temp[j]) == 1 {
-					grid[i][j] = &Point{i: i, j: j, value: getNum(temp[j]), minDist: 99, visited: false}
+					grid[i][j] = &Point{i: i, j: j, value: getNum(temp[j]), minDist: 9999, visited: false}
 					p2points = append(p2points, grid[i][j])
 				} else {
 					grid[i][j] = &Point{i: i, j: j, value: getNum(temp[j]), minDist: 9999, visited: false}
