@@ -13,18 +13,23 @@ func main() {
 	i, _ := os.ReadFile("input.txt")
 	input := strings.Split(string(i), "\n")
 	sensors, beacons, dmap := make([]Sensor, 0), make([]Point, 0), make(map[Point]Point)
+	grid, gridB := make([]bool, 10000000), make([]bool, 10000000)
 
 	for _, s := range input {
 		var sx, sy, bx, by int
 		fmt.Sscanf(s, "Sensor at x=%d, y=%d: closest beacon is at x=%d, y=%d", &sx, &sy, &bx, &by)
+		gridB[bx+5000000] = (by == 2000000)
 		dist := manDist(sx, sy, bx, by)
+		fill(sx, sy, dist*2+1, grid)
 		top, right, bottom, left := Point{x: sx, y: sy - dist}, Point{x: sx + dist, y: sy}, Point{x: sx, y: sy + dist}, Point{x: sx - dist, y: sy}
 		currentSensor := Sensor{top: top, right: right, bottom: bottom, left: left, self: Point{x: sx, y: sy}, dist: dist}
 		currentBeacon := Point{x: bx, y: by}
 		sensors, beacons = append(sensors, currentSensor), append(beacons, currentBeacon)
 	}
 
-	fmt.Println("(Runtime is a few Minutes)")
+	fmt.Println("Part 1:", count(grid, gridB))
+	fmt.Println("Time elapsed:", time.Since(start))
+	fmt.Println("\nPart 2 Runtime is a few minutes...")
 
 	for _, s := range sensors {
 		addAllDiagElements(dmap, s)
@@ -35,15 +40,6 @@ func main() {
 	}
 
 	fmt.Println("Time elapsed:", time.Since(start))
-}
-
-type Sensor struct {
-	top, right, bottom, left, self Point
-	dist                           int
-}
-
-type Point struct {
-	x, y int
 }
 
 func manDist(x1 int, y1 int, x2 int, y2 int) int {
@@ -119,4 +115,50 @@ func isInside(p Point, sc []Sensor) bool {
 		}
 	}
 	return false
+}
+
+func fill(x int, y int, c int, grid []bool) []bool {
+	offset := 2000000 - y
+	from := (x - (c / 2)) + int(math.Abs(float64(offset)))
+	to := (x + (c / 2)) - int(math.Abs(float64(offset)))
+
+	if checkIfOnLine(y, (c / 2)) {
+		for i := from; i <= to; i++ {
+			grid[i+5000000] = true
+		}
+	}
+	return grid
+}
+
+func checkIfOnLine(y int, d int) bool {
+	if y-d <= 2000000 && y+d >= 2000000 {
+		return true
+	}
+	return false
+}
+
+func count(grid []bool, gridB []bool) int {
+	res, res2 := 0, 0
+
+	for _, s := range grid {
+		if s == true {
+			res++
+		}
+	}
+
+	for _, s := range gridB {
+		if s == true {
+			res2++
+		}
+	}
+	return res - res2
+}
+
+type Sensor struct {
+	top, right, bottom, left, self Point
+	dist                           int
+}
+
+type Point struct {
+	x, y int
 }
